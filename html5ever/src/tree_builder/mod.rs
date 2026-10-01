@@ -778,7 +778,7 @@ where
 
             let Some((furthest_block_index, furthest_block)) = maybe_furthest_block else {
                 // 10.
-                self.open_elems.borrow_mut().truncate(fmt_elem_stack_index);
+                self.pop_to_len(fmt_elem_stack_index);
                 self.active_formatting.borrow_mut().remove(fmt_elem_index);
                 return;
             };
@@ -922,6 +922,13 @@ where
 
     fn push(&self, elem: &Handle) {
         self.open_elems.borrow_mut().push(elem.clone());
+    }
+
+    // Pop elements until `len` are left, telling the sink of each as it goes.
+    fn pop_to_len(&self, len: usize) {
+        while self.open_elems.borrow().len() > len {
+            self.pop();
+        }
     }
 
     fn pop(&self) -> Handle {
@@ -1167,7 +1174,7 @@ where
         TagSet: Fn(ExpandedName) -> bool,
     {
         while !self.current_node_in(&tag_set) {
-            self.open_elems.borrow_mut().pop();
+            self.pop();
         }
     }
 
@@ -1180,9 +1187,11 @@ where
         let mut n = 0;
         loop {
             n += 1;
-            match self.open_elems.borrow_mut().pop() {
+            let popped = self.open_elems.borrow_mut().pop();
+            match popped {
                 None => break,
                 Some(elem) => {
+                    self.sink.pop(&elem);
                     if pred(self.sink.elem_name(&elem).expanded()) {
                         break;
                     }
@@ -1581,7 +1590,7 @@ where
             // mis-nested tags
             self.unexpected(&tag);
         }
-        self.open_elems.borrow_mut().truncate(match_idx);
+        self.pop_to_len(match_idx);
     }
 
     fn handle_misnested_a_tags(&self, tag: &Tag) {

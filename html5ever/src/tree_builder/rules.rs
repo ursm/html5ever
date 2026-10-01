@@ -468,7 +468,7 @@ where
 
                     // FIXME: can we get here in the fragment case?
                     // What to do with the first element then?
-                    self.open_elems.borrow_mut().truncate(1);
+                    self.pop_to_len(1);
                     self.insert_element_for(tag);
                     self.mode.set(InsertionMode::InFrameset);
                     ProcessResult::Done
@@ -1671,7 +1671,7 @@ where
                     }
 
                     if eq {
-                        self.open_elems.borrow_mut().truncate(stack_idx);
+                        self.pop_to_len(stack_idx);
                         return ProcessResult::Done;
                     }
 
