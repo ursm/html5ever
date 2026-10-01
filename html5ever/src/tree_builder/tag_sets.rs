@@ -54,8 +54,17 @@ declare_tag_set!(pub html_default_scope =
 
 #[inline(always)]
 pub(crate) fn default_scope(name: ExpandedName) -> bool {
-    html_default_scope(name)
-        || mathml_text_integration_point(name)
+    html_default_scope(name) || foreign_scope_boundary(name)
+}
+
+/// The foreign elements that are in the "special" category and bound every scope: MathML mi, mo, mn, ms, mtext and
+/// annotation-xml, and SVG foreignObject, desc and title.
+/// https://html.spec.whatwg.org/multipage/#special
+/// https://html.spec.whatwg.org/multipage/#has-an-element-in-the-specific-scope
+#[inline(always)]
+fn foreign_scope_boundary(name: ExpandedName) -> bool {
+    mathml_text_integration_point(name)
+        || name == expanded_name!(mathml "annotation-xml")
         || svg_html_integration_point(name)
 }
 
@@ -75,7 +84,7 @@ declare_tag_set!(pub thorough_implied_end = [cursory_implied_end]
 
 declare_tag_set!(pub heading_tag = "h1" "h2" "h3" "h4" "h5" "h6");
 
-declare_tag_set!(pub special_tag =
+declare_tag_set!(pub html_special_tag =
     "address" "applet" "area" "article" "aside" "base" "basefont" "bgsound" "blockquote" "body"
     "br" "button" "caption" "center" "col" "colgroup" "dd" "details" "dir" "div" "dl" "dt" "embed"
     "fieldset" "figcaption" "figure" "footer" "form" "frame" "frameset" "h1" "h2" "h3" "h4" "h5"
@@ -84,6 +93,11 @@ declare_tag_set!(pub special_tag =
     "object" "ol" "p" "param" "plaintext" "pre" "script" "section" "select" "source" "style"
     "summary" "table" "tbody" "td" "template" "textarea" "tfoot" "th" "thead" "title" "tr" "track"
     "ul" "wbr" "xmp");
+
+#[inline(always)]
+pub(crate) fn special_tag(name: ExpandedName) -> bool {
+    html_special_tag(name) || foreign_scope_boundary(name)
+}
 //§ END
 
 pub(crate) fn mathml_text_integration_point(p: ExpandedName) -> bool {

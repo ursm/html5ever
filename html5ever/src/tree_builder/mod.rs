@@ -814,12 +814,14 @@ where
                     self.position_in_active_formatting(&node)
                         .map(|position| self.active_formatting.borrow_mut().remove(position));
                     self.open_elems.borrow_mut().remove(node_index);
+                    self.sink.pop(&node);
                     continue;
                 }
 
                 let Some(node_formatting_index) = self.position_in_active_formatting(&node) else {
                     // 13.6.
                     self.open_elems.borrow_mut().remove(node_index);
+                    self.sink.pop(&node);
                     continue;
                 };
 
