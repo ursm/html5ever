@@ -1484,10 +1484,11 @@ where
             } => (element.clone(), Some(prev_element.clone())),
         };
 
-        // template start tag's shadowrootmode is not in the none state
+        // template start tag's shadowrootmode is not in the none state (an enumerated attribute: its keywords
+        // match ASCII case-insensitively)
         let is_shadow_root_mode = tag.attrs.iter().any(|attr| {
             attr.name.local == local_name!("shadowrootmode")
-                && (attr.value.as_ref() == "open" || attr.value.as_ref() == "closed")
+                && (attr.value.eq_ignore_ascii_case("open") || attr.value.eq_ignore_ascii_case("closed"))
         });
 
         // Check if intended_parent's document allows declarative shadow roots
